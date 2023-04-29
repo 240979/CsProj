@@ -1,0 +1,69 @@
+﻿@page "/"
+@using ElectronicStorageBlazor.Data
+@using ElectronicStorageBlazor.Models
+@inject StorageService StorageService
+@inject NavigationManager NavigationManager
+<PageTitle>Databáze elektronického skladu</PageTitle>
+
+<h1>Výpis databáze</h1>
+
+
+@if (!_items.Any())
+{
+    <p>
+        <em>Zdá se, že databáze je prázdná</em>
+    </p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Název</th>
+            <th>Cena</th>
+            <th>Množství</th>
+            <th>Popis</th>
+            <th>Vymazat</th>
+            <th>Editovat</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in _items)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Price</td>
+                <td>@item.Quantity</td>
+                <td>@item.Description</td>
+                <td><button @onclick="() => OnClickDelete(item.Id)">Vymaž</button></td>
+                <td><button @onclick="() => OnClickUpdate(item.Id)">Uprav</button></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    IEnumerable<ItemDto> _items = new List<ItemDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetItems();
+    }
+
+    private async Task GetItems()
+    {
+        _items = await StorageService.GetItems();
+    }
+
+    private async Task OnClickUpdate(Guid id)
+    {
+        NavigationManager.NavigateTo($"/Edit/{id}");
+    }
+
+    private async Task OnClickDelete(Guid id)
+    {
+        await StorageService.DeleteItem(id);
+        await GetItems();
+    }
+}

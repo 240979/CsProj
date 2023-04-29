@@ -1,0 +1,79 @@
+﻿@page "/Add"
+@using ElectronicStorageBlazor.Data
+@using ElectronicStorageBlazor.Form
+@using ElectronicStorageBlazor.Models
+@using Microsoft.AspNetCore.Components
+@inject StorageService StorageService
+@inject NavigationManager NavigationManager
+<h3>Přidání nové položky do skladu</h3>
+<EditForm Model="@_model" OnValidSubmit="@SubmitHandler">
+    <DataAnnotationsValidator/>
+    <table>
+        <thead>
+        <tr>
+            <th>
+                <label>Název: </label>
+            </th>
+            <th>
+                <label>Cena: </label>
+            </th>
+            <th>
+                <label>Množství: </label>
+            </th>
+            <th>
+                <label>Popis: </label>
+            </th>  
+            <th>
+                
+            </th>
+        </tr>
+        
+        </thead>
+        <tbody>
+        <tr>
+            <td>
+                <InputText @bind-Value="_model.Name"/>
+            </td>
+            <td>
+                <InputNumber @bind-Value="_model.Price"/>           
+            </td>
+            <td>
+                <InputNumber @bind-Value="_model.Quantity"/>            
+            </td>
+            <td>
+                <InputTextArea @bind-Value="_model.Description" rows="1"/>
+            </td>
+            <td>
+                <button type="submit">Budiž</button>
+            </td>
+        </tr>
+         <tr>
+                    <td>
+                         <ValidationMessage For="@(() => _model.Name)"/>
+                    </td>
+                    <td>
+                         <ValidationMessage For="@(() => _model.Price)"/>          
+                    </td>
+                    <td>
+                        <ValidationMessage For="@(() => _model.Quantity)"/>          
+                    </td>
+                    <td>
+                         <ValidationMessage For="@(() => _model.Description)"/>
+                    </td>
+             <td>
+                 
+             </td>
+                </tr>
+        </tbody>
+    </table>
+</EditForm>
+@code 
+{
+    StorageForm _model = new StorageForm();
+    private async void SubmitHandler()
+    {
+        ItemDto item = new ItemDto(_model.Name, _model.Price, _model.Quantity, _model.Description);
+        await StorageService.AddItem(item);
+        NavigationManager.NavigateTo("/");
+    }
+}

@@ -1,0 +1,133 @@
+﻿@page "/Edit"
+@page "/Edit/{Id}"    
+@using ElectronicStorageBlazor.Data
+@using ElectronicStorageBlazor.Form
+@using ElectronicStorageBlazor.Models
+@inject StorageService StorageService
+@inject NavigationManager NavigationManager
+<h3>Správa skladu</h3>
+@if (!_run)
+{
+    <p>
+        <em>Zdá se, že nebyla zaslána data</em>
+    </p>
+}
+else
+{
+    <br/>
+    <EditForm Model="@_model" OnValidSubmit="@SubmitHandler">
+        <DataAnnotationsValidator/>
+        <table>
+            <thead>
+            <tr>
+                <th>
+                    <label>Název: </label>
+                </th>
+                <th>
+                    <label>Cena: </label>
+                </th>
+                <th>
+                    <label>Množství: </label>
+                </th>
+                <th>
+                    <label>Popis: </label>
+                </th>  
+                <th>
+                
+                </th>
+            </tr>
+        
+            </thead>
+            <tbody>
+            <tr>
+                <td>
+                    <InputText @bind-Value="_model.Name"/>
+                </td>
+                <td>
+                    <InputNumber @bind-Value="_model.Price"/>           
+                </td>
+                <td>
+                    <InputNumber @bind-Value="_model.Quantity"/>            
+                </td>
+                <td>
+                    <InputTextArea @bind-Value="_model.Description" rows="1"/>
+                </td>
+                <td>
+                    <button type="submit">Budiž</button>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <ValidationMessage For="@(() => _model.Name)"/>
+                </td>
+                <td>
+                    <ValidationMessage For="@(() => _model.Price)"/>          
+                </td>
+                <td>
+                    <ValidationMessage For="@(() => _model.Quantity)"/>          
+                </td>
+                <td>
+                    <ValidationMessage For="@(() => _model.Description)"/>
+                </td>
+                <td>
+                 
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </EditForm>
+    
+}
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private bool _run = true;
+    private ItemDto _item;
+    IEnumerable<ItemDto> _items = new List<ItemDto>();
+
+    StorageForm _model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Guid id;
+        if(!Guid.TryParse(Id, out id))
+        {
+            _run = false;
+        }
+        else
+        {
+            try
+            {
+                await GetItem(id);
+                _model.Description = _item.Description;
+                _model.Name = _item.Name;
+                _model.Quantity = _item.Quantity;
+                _model.Price = _item.Price;
+                _run = true;
+            }
+            catch (HttpRequestException e)
+            {
+                _run = false;
+            }
+            
+        }
+    }
+    
+    
+    private async Task  GetItem(Guid id)
+    {
+        _item = await StorageService.GetOneItem(id);
+       
+    }
+    
+    private async void SubmitHandler()
+    {
+        _item.Description = _model.Description;
+        _item.Name = _model.Name;
+        _item.Quantity = _model.Quantity;
+        _item.Price = _model.Price;
+        await StorageService.UpdateItem(_item.Id,_item);
+        NavigationManager.NavigateTo("/");
+    }
+}
